@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  YOUR_AZURE_WEBAPP_NAME: torah-vocab            # set this to your application's name
+  YOUR_AZURE_WEBAPP_NAME: <torah-vocab>            # set this to your application's name
   YOUR_AZURE_WEBAPP_SLOT_NAME: Production # set this to your application's slot name
   YOUR_AZURE_WEBAPP_PACKAGE_PATH: "."     # set this to the path to your web app project, defaults to the repository root
   YOUR_NODE_VERSION: '16.x'                            # set this to the node version to use
@@ -47,8 +47,8 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
-          name: $${{ env.YOUR_AZURE_WEBAPP_NAME}}
-          path: $${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH}}/${{ env.YOUR_ZIP_PACKAGE_NAME}}
+          name: ${{ env.YOUR_AZURE_WEBAPP_NAME }}
+          path: ${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH }}/${{ env.YOUR_ZIP_PACKAGE_NAME }}
           retention-days: 1
           #release.zip
 
@@ -63,7 +63,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
-          name: ${{ env.YOUR_AZURE_WEBAPP_NAME}}
+          name: ${{ env.YOUR_AZURE_WEBAPP_NAME }}
 
     #  - name: Unzip artifact
      #   run: unzip release.zip
@@ -71,7 +71,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
         with:
-          app-name: 'torah-vocab'
+      app-name: ${{ env.YOUR_AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0DD185CF2C6E4EDAAC4148B1CB7760CF }}
-          package: ${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH}}/${{ env.YOUR_ZIP_PACKAGE_NAME}}
+          package: ${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH }}/${{ env.YOUR_ZIP_PACKAGE_NAME}}
