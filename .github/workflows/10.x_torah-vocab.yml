@@ -9,12 +9,19 @@ on:
       - 10.x
   workflow_dispatch:
 
+env:
+  YOUR_AZURE_WEBAPP_NAME: torah-vocab            # set this to your application's name
+  YOUR_AZURE_WEBAPP_SLOT_NAME: Production # set this to your application's slot name
+  YOUR_AZURE_WEBAPP_PACKAGE_PATH: "."     # set this to the path to your web app project, defaults to the repository root
+  YOUR_NODE_VERSION: '16.x'                            # set this to the node version to use
+  YOUR_ZIP_PACKAGE_NAME: "app-release.zip"
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -31,14 +38,18 @@ jobs:
         if: steps.check_files.outputs.files_exists == 'true'
         run: composer validate --no-check-publish && composer install --prefer-dist --no-progress
 
+      - name: Zip artifact to upload
+        run: zip -r ${{ env.YOUR_ZIP_PACKAGE_NAME }} ${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH }}
+
      # - name: Zip the application files
       #  run: zip -r release.zip
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: php-app
-          path: .
+          name: $${{ env.YOUR_AZURE_WEBAPP_NAME}}
+          path: $${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH}}/${{ env.YOUR_ZIP_PACKAGE_NAME}}
+          retention-days: 1
           #release.zip
 
   deploy:
@@ -50,9 +61,9 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
-          name: php-app
+          name: ${{ env.YOUR_AZURE_WEBAPP_NAME}}
 
     #  - name: Unzip artifact
      #   run: unzip release.zip
@@ -63,4 +74,4 @@ jobs:
           app-name: 'torah-vocab'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0DD185CF2C6E4EDAAC4148B1CB7760CF }}
-          package: .
+          package: ${{ env.YOUR_AZURE_WEBAPP_PACKAGE_PATH}}/${{ env.YOUR_ZIP_PACKAGE_NAME}}
